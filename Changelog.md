@@ -47,6 +47,8 @@
 
 ## FF7
 
+- Core: Fix core game bug issue happening on the wind wall fields `woa_*` ( https://github.com/julianxhokaxhiu/FFNx/issues/797 )
+- Core: Fix FADE opcode fading color when type=2 is used ( https://github.com/julianxhokaxhiu/FFNx/issues/805 )
 - 60FPS: Fix escape magic animation speed (https://github.com/julianxhokaxhiu/FFNx/issues/794)
 - 60FPS: Fix manipulate, poison and regen effect animation in battle (https://github.com/julianxhokaxhiu/FFNx/issues/817)
 - Core: Fix core game bug issue happening on the wind wall fields `woa_*` ( https://github.com/julianxhokaxhiu/FFNx/issues/797 )
@@ -86,7 +88,6 @@
 
 - Core: Fix memory leak when using the field chunk functionality ( https://github.com/julianxhokaxhiu/FFNx/issues/768 )
 - Cheats: Use equipped Attack behavior when using auto-attack shortcut ( https://github.com/julianxhokaxhiu/FFNx/pull/773 )
-- Music: Allow to use a custom music track per world map area ( music files will have an `_aXX` format appended to the file name, where XX is the area ID )
 - Rendering: Add uncrop option to remove black bars from top/bottom of the screen ( https://github.com/julianxhokaxhiu/FFNx/pull/767 )
 
 ## FF8
