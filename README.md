@@ -1,3 +1,10 @@
+This is a development fork for improving NTSC-J mode in FFNx.
+This is **NOT** mainline FFNx.
+Unless you are interested in previewing the revised NTSC-J mode, you are in the wrong place.
+Go [here](https://github.com/julianxhokaxhiu/FFNx) instead.
+
+Original readme below:
+
 ![License](https://img.shields.io/github/license/julianxhokaxhiu/FFNx) ![Overall Downloads](https://img.shields.io/github/downloads/julianxhokaxhiu/FFNx/total?label=Overall%20Downloads) ![Latest Stable Downloads](https://img.shields.io/github/downloads/julianxhokaxhiu/FFNx/latest/total?label=Latest%20Stable%20Downloads&sort=semver) ![Latest Canary Downloads](https://img.shields.io/github/downloads/julianxhokaxhiu/FFNx/canary/total?label=Latest%20Canary%20Downloads) ![GitHub Actions Workflow Status](https://github.com/julianxhokaxhiu/FFNx/actions/workflows/main-1.24.3.yml/badge.svg?branch=master)
 
 <div align="center">
