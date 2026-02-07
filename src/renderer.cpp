@@ -466,9 +466,12 @@ void Renderer::renderFrame()
     {
         bool needsToDraw = internalState.bHasDrawBeenDone;
 
-        useTexture(
-            bgfx::getTexture(backendFrameBuffer).idx
-        );
+        if (internalState.bHasDrawBeenDone)
+            useTexture(
+                bgfx::getTexture(backendFrameBuffer).idx
+            );
+        else
+            useTexture(0);
 
         setClearFlags(true, true);
 
@@ -1605,32 +1608,29 @@ void Renderer::show()
     // Reset internal state
     resetState();
 
-    if (internalState.bHasDrawBeenDone)
-    {
-        renderFrame();
+    renderFrame();
 
-        bgfx::update(
-            vertexBufferHandle,
-            0,
-            bgfx::copy(
-                vertexBufferData.data(),
-                vectorSizeOf(vertexBufferData)
-            )
-        );
+    bgfx::update(
+        vertexBufferHandle,
+        0,
+        bgfx::copy(
+            vertexBufferData.data(),
+            vectorSizeOf(vertexBufferData)
+        )
+    );
 
-        bgfx::update(
-            indexBufferHandle,
-            0,
-            bgfx::copy(
-                indexBufferData.data(),
-                vectorSizeOf(indexBufferData)
-            )
-        );
+    bgfx::update(
+        indexBufferHandle,
+        0,
+        bgfx::copy(
+            indexBufferData.data(),
+            vectorSizeOf(indexBufferData)
+        )
+    );
 
-        bgfx::frame(doCaptureFrame);
+    bgfx::frame(doCaptureFrame);
 
-        if (trace_all || trace_renderer) ffnx_trace("Renderer::%s\n", __func__);
-    }
+    if (trace_all || trace_renderer) ffnx_trace("Renderer::%s\n", __func__);
 
     bgfx::dbgTextClear();
 
