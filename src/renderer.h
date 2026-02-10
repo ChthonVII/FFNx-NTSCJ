@@ -151,17 +151,7 @@ enum ColorMatrixType{
 
 enum ColorGamutType{
     COLORGAMUT_SRGB = 0,
-    COLORGAMUT_NTSCJ = 1,
-    COLORGAMUT_SMPTEC = 2,
-    COLORGAMUT_EBU = 3
-};
-
-enum InverseGammaFunctionType{
-    GAMMAFUNCTION_SRGB = 0,
-    GAMMAFUNCTION_TWO_PT_TWO = 1,
-    GAMMAFUNCTION_SMPTE170M = 2,
-    GAMMAFUNCTION_TOELESS_SRGB = 3,
-    GAMMAFUNCTION_TWO_PT_EIGHT = 4
+    COLORGAMUT_NTSCJ = 1
 };
 
 namespace RendererTextureSlot {
@@ -183,15 +173,7 @@ namespace RendererTextureSlot {
 };
 
 enum GamutLUTIndexType{
-	INDEX_LUT_NTSCJ_TO_SRGB,
-	INDEX_LUT_SMPTEC_TO_SRGB,
-	INDEX_LUT_EBU_TO_SRGB,
-	INDEX_LUT_INVERSE_NTSCJ_TO_SRGB,
-	INDEX_LUT_INVERSE_NTSCJ_TO_SMPTEC,
-	INDEX_LUT_INVERSE_NTSCJ_TO_EBU,
-	INDEX_LUT_SRGB_TO_NTSCJ,
-	INDEX_LUT_SMPTEC_TO_NTSCJ,
-	INDEX_LUT_EBU_TO_NTSCJ
+  INDEX_LUT_NTSCJ_TO_SRGB,
 };
 
 static void RendererReleaseImageContainer(void* _ptr, void* _userData)
@@ -284,14 +266,12 @@ private:
         bool bIsMovie = false;
         bool bIsMovieFullRange = false;
         bool bIsMovieYUV = false;
+        bool bIsMovieLogoMovie = false;
         bool bIsExternalTexture = false;
         bool bIsHDR = false;
         bool bIsFogEnabled = false;
         ColorMatrixType bIsMovieColorMatrix = COLORMATRIX_BT601;
-        ColorGamutType bIsMovieColorGamut = COLORGAMUT_SRGB;
         ColorGamutType bIsOverallColorGamut = COLORGAMUT_SRGB;
-        bool bIsOverrideGamut = false;
-        InverseGammaFunctionType bIsMovieGammaType = GAMMAFUNCTION_SRGB;
 
         float backendProjMatrix[16];
         float postprocessingProjMatrix[16];
@@ -460,7 +440,7 @@ public:
     void prepareDiffuseIbl(char* fullpath = nullptr);
     void prepareEnvBrdf();
     void prepareGamutLUTs();
-	void LoadGamutLUT(GamutLUTIndexType whichLUT);
+    void LoadGamutLUT(GamutLUTIndexType whichLUT);
     void shutdown();
 
     void clearShadowMap();
@@ -522,10 +502,8 @@ public:
     void isExternalTexture(bool flag = false);
     bool isHDR();
     void setColorMatrix(ColorMatrixType cmtype = COLORMATRIX_BT601);
-    void setColorGamut(ColorGamutType cgtype = COLORGAMUT_SRGB);
     void setOverallColorGamut(ColorGamutType cgtype = COLORGAMUT_SRGB);
-    void setGammaType(InverseGammaFunctionType gtype = GAMMAFUNCTION_SRGB);
-    void setGamutOverride(bool flag = false);
+    void isMovieLogoMovie(bool flag = false);
 
     // Alpha mode emulation
     void setAlphaRef(RendererAlphaFunc func = RendererAlphaFunc::ALWAYS, float ref = 0.0f);

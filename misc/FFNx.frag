@@ -77,26 +77,15 @@ uniform vec4 gameScriptedLightColor;
 #define isHDR FSHDRFlags.x > 0.0
 #define monitorNits FSHDRFlags.y
 
-#define doGamutOverride FSHDRFlags.z > 0.0
-
 
 #define isBT601ColorMatrix abs(FSMovieFlags.x - 0.0) < 0.00001
 #define isBT709ColorMatrix abs(FSMovieFlags.x - 1.0) < 0.00001
 #define isBRG24ColorMatrix abs(FSMovieFlags.x - 2.0) < 0.00001
 
-#define isSRGBColorGamut abs(FSMovieFlags.y - 0.0) < 0.00001
-#define isNTSCJColorGamut abs(FSMovieFlags.y - 1.0) < 0.00001
-#define isSMPTECColorGamut abs(FSMovieFlags.y - 2.0) < 0.00001
-#define isEBUColorGamut abs(FSMovieFlags.y - 3.0) < 0.00001
+#define isOverallSRGBColorGamut abs(FSMovieFlags.z - 0.0) < 0.00001
+#define isOverallNTSCJColorGamut abs(FSMovieFlags.z - 1.0) < 0.00001
 
-#define isSRGBGamma abs(FSMovieFlags.z - 0.0) < 0.00001
-#define is2pt2Gamma abs(FSMovieFlags.z - 1.0) < 0.00001
-#define is170MGamma abs(FSMovieFlags.z - 2.0) < 0.00001
-#define isToelessSRGBGamma abs(FSMovieFlags.z - 3.0) < 0.00001
-#define is2pt8Gamma abs(FSMovieFlags.z - 4.0) < 0.00001
-
-#define isOverallSRGBColorGamut abs(FSMovieFlags.w - 0.0) < 0.00001
-#define isOverallNTSCJColorGamut abs(FSMovieFlags.w - 1.0) < 0.00001
+#define isLogoMovie FSMovieFlags.y > 0.0
 
 #define isTimeEnabled TimeData.x > 0.0
 #define isTimeFilterEnabled TimeData.x > 0.0 && TimeData.y > 0.0
@@ -125,7 +114,7 @@ void main()
                 ivec2 ydimensions = textureSize(tex_0, 0);
                 ivec2 udimensions = textureSize(tex_1, 0);
                 ivec2 vdimensions = textureSize(tex_2, 0);
-                yuv = QuasirandomDither(yuv, v_texcoord0.xy, ydimensions, udimensions, vdimensions, 255.0, 1.0);
+                yuv = QuasirandomDither(yuv, v_texcoord0.xy, ydimensions, udimensions, vdimensions, 256.0, 1.0);
                 // clamp back to tv range
                 yuv = clamp(yuv, vec3_splat(16.0/255.0), vec3(235.0/255.0, 240.0/255.0, 240.0/255.0));
             }
@@ -160,49 +149,12 @@ void main()
                 color.rgb = vec3_splat(0.5);
             }
 
-            // Use a different inverse gamma function depending on the FMV's metadata
-            if (isToelessSRGBGamma){
-                color.rgb = toLinearToelessSRGB(color.rgb);
-            }
-            else if (is2pt2Gamma){
-                color.rgb = toLinear2pt2(color.rgb);
-            }
-            else if (is170MGamma){
-                color.rgb = toLinearSMPTE170M(color.rgb);
-            }
-            else if (is2pt8Gamma){
-                color.rgb = toLinear2pt8(color.rgb);
-            }
-            else {
-                color.rgb = toLinear(color.rgb);
+            //logo movie inverse color correction
+            if ((isOverallNTSCJColorGamut) && (isLogoMovie)){
+              color.rgb = CRTUncorrect(color.rgb);
             }
 
-            // Convert gamut to BT709/SRGB or NTSC-J, depending on what we're going to do in post.
-            // This approach has the unfortunate drawback of resulting in two gamut conversions for some inputs.
-            // But it seems to be the only way to avoid breaking stuff that has expectations about the texture colors (like animated field textures).
-            // Use of NTSC-J as the source gamut  for the original videos and their derivatives is a *highly* probable guess:
-            // It looks correct, is consistent with the PS1's movie decoder chip's known use of BT601 color matrix, and conforms with Japanese TV standards of the time.
-            if (isOverallNTSCJColorGamut){
-                // do nothing for NTSC-J
-                if ((isSRGBColorGamut) || (isSMPTECColorGamut) || (isEBUColorGamut)){
-                    color.rgb = GamutLUT(color.rgb);
-                    // dither after the LUT operation
-                    ivec2 dimensions = textureSize(tex_0, 0);
-                    color.rgb = QuasirandomDither(color.rgb, v_texcoord0.xy, dimensions, dimensions, dimensions, 255.0, 4320.0);
-                }
-                // Note: Bring back matrix-based conversions for HDR *if* we can find a way to left potentially out-of-bounds values linger until post processing.
-            }
-            // overall sRGB
-            else {
-                // do nothing for sRGB
-                if ((isNTSCJColorGamut) || (isSMPTECColorGamut) || (isEBUColorGamut)){
-                    color.rgb = GamutLUT(color.rgb);
-                    // dither after the LUT operation
-                    ivec2 dimensions = textureSize(tex_0, 0);
-                    color.rgb = QuasirandomDither(color.rgb, v_texcoord0.xy, dimensions, dimensions, dimensions, 255.0, 4320.0);
-                }
-                // Note: Bring back matrix-based conversions for HDR *if* we can find a way to left potentially out-of-bounds values linger until post processing.
-            }
+            color.rgb = toLinear(color.rgb);
 
             color.a = 1.0;
         }
@@ -259,14 +211,6 @@ void main()
                 // This was previously in gamma space, so linearize again.
                 texture_color.rgb = toLinear(texture_color.rgb);
             }
-            // This stanza currently does nothing because there's no way to set doGamutOverride.
-            // Hopefully the future will bring a way to set this for types of textures (e.g., world, model, field, spell, etc.) or even for individual textures based on metadata.
-            else if (doGamutOverride){
-                texture_color.rgb = GamutLUT(texture_color.rgb);
-                ivec2 dimensions = textureSize(tex_0, 0);
-                texture_color.rgb = QuasirandomDither(texture_color.rgb, v_texcoord0.xy, dimensions, dimensions, dimensions, 255.0, 1.0);
-                // Note: Bring back matrix-based conversions for HDR *if* we can find a way to left potentially out-of-bounds values linger until post processing.
-            }
 
             if (isMovie) texture_color.a = 1.0;
 
@@ -276,7 +220,7 @@ void main()
             else
             {
                 color.rgb *= texture_color.rgb;
-			    color.a = texture_color.a;
+                color.a = texture_color.a;
             }
         }
     }
